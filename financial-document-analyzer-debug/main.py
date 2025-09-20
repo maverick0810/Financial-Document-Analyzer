@@ -1,7 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 import os
 import uuid
-import asyncio
 
 from crewai import Crew, Process
 from agents import financial_analyst
@@ -9,16 +8,30 @@ from task import analyze_financial_document
 
 app = FastAPI(title="Financial Document Analyzer")
 
-def run_crew(query: str, file_path: str="data/sample.pdf"):
-    """To run the whole crew"""
-    financial_crew = Crew(
-        agents=[financial_analyst],
-        tasks=[analyze_financial_document],
-        process=Process.sequential,
-    )
-    
-    result = financial_crew.kickoff({'query': query})
-    return result
+def run_financial_crew(query: str, file_path: str = "data/sample.pdf"):
+    """Run the financial analysis crew"""
+    try:
+        # Update the task context with the file path
+        task_context = {
+            'query': query, 
+            'file_path': file_path
+        }
+        
+        # Create a new task instance with the file path
+        analysis_task = analyze_financial_document
+        analysis_task.description = analysis_task.description.format(**task_context)
+        
+        financial_crew = Crew(
+            agents=[financial_analyst],
+            tasks=[analysis_task],
+            process=Process.sequential,
+            verbose=True
+        )
+        
+        result = financial_crew.kickoff(task_context)
+        return result
+    except Exception as e:
+        raise Exception(f"Error running financial crew: {str(e)}")
 
 @app.get("/")
 async def root():
@@ -26,11 +39,15 @@ async def root():
     return {"message": "Financial Document Analyzer API is running"}
 
 @app.post("/analyze")
-async def analyze_financial_document(
+async def analyze_document_endpoint(
     file: UploadFile = File(...),
     query: str = Form(default="Analyze this financial document for investment insights")
 ):
     """Analyze financial document and provide comprehensive investment recommendations"""
+    
+    # Validate file type
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
     
     file_id = str(uuid.uuid4())
     file_path = f"data/financial_document_{file_id}.pdf"
@@ -45,11 +62,11 @@ async def analyze_financial_document(
             f.write(content)
         
         # Validate query
-        if query=="" or query is None:
+        if not query or query.strip() == "":
             query = "Analyze this financial document for investment insights"
             
-        # Process the financial document with all analysts
-        response = run_crew(query=query.strip(), file_path=file_path)
+        # Process the financial document
+        response = run_financial_crew(query=query.strip(), file_path=file_path)
         
         return {
             "status": "success",

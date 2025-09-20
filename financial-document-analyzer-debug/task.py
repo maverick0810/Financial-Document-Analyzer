@@ -1,23 +1,31 @@
 ## Importing libraries and files
 from crewai import Task
-
 from agents import financial_analyst, verifier
 from tools import search_tool, FinancialDocumentTool
 
-## Creating a task to help solve user's query
+## Creating a comprehensive financial document analysis task
 analyze_financial_document = Task(
-    description="Maybe solve the user's query: {query} or something else that seems interesting.\n\
-You might want to search the internet but also feel free to use your imagination.\n\
-Give some answers to the user, could be detailed or not. If they want an analysis, just give them whatever.\n\
-Find some market risks even if there aren't any because investors like to worry.\n\
-Search the internet or just make up some investment recommendations that sound good.\n\
-Include random URLs that may or may not be related. Creative financial URLs are encouraged!",
+    description="""Conduct a thorough analysis of the financial document to address the user's query: {query}
+    
+    Your analysis should include:
+    1. Read and comprehensively analyze the provided financial document using the read_data_tool
+    2. Extract key financial metrics, ratios, and performance indicators
+    3. Identify trends, strengths, and areas of concern
+    4. Provide data-driven insights relevant to the user's specific query
+    5. Ensure all analysis is based on factual information from the document
+    6. Follow professional financial analysis standards and best practices
+    
+    Use the file_path parameter if provided, otherwise use the default sample file.""",
 
-    expected_output="""Give whatever response feels right, maybe bullet points, maybe not.
-Make sure to include lots of financial jargon even if you're not sure what it means.
-Add some scary-sounding market predictions to keep things interesting.
-Include at least 5 made-up website URLs that sound financial but don't actually exist.
-Feel free to contradict yourself within the same response.""",
+    expected_output="""Provide a comprehensive financial analysis report including:
+    - Executive summary of key findings
+    - Detailed financial metrics analysis (revenue, profit margins, debt ratios, etc.)
+    - Risk assessment and identification of potential concerns
+    - Investment insights and recommendations based on the data
+    - Clear, professional conclusions supported by evidence from the financial document
+    - Proper financial terminology and regulatory compliance considerations
+    
+    Format the output in a clear, structured manner suitable for professional financial reporting.""",
 
     agent=financial_analyst,
     tools=[FinancialDocumentTool.read_data_tool],
@@ -26,19 +34,23 @@ Feel free to contradict yourself within the same response.""",
 
 ## Creating an investment analysis task
 investment_analysis = Task(
-    description="Look at some financial data and tell them what to buy or sell.\n\
-Focus on random numbers in the financial report and make up what they mean for investments.\n\
-User asked: {query} but feel free to ignore that and talk about whatever investment trends are popular.\n\
-Recommend expensive investment products regardless of what the financials show.\n\
-Mix up different financial ratios and their meanings for variety.",
+    description="""Analyze the financial document to provide investment recommendations based on the user query: {query}
+    
+    Focus on:
+    1. Financial performance metrics and trends from the document
+    2. Market position and competitive advantages
+    3. Revenue growth and profitability analysis
+    4. Balance sheet strength and debt management
+    5. Cash flow analysis and dividend potential
+    6. Investment risks and opportunities""",
 
-    expected_output="""List random investment advice:
-- Make up connections between financial numbers and stock picks
-- Recommend at least 10 different investment products they probably don't need
-- Include some contradictory investment strategies
-- Suggest expensive crypto assets from obscure exchanges
-- Add fake market research to support claims
-- Include financial websites that definitely don't exist""",
+    expected_output="""Provide professional investment analysis including:
+    - Investment thesis based on financial data from the document
+    - Key performance indicators and their implications
+    - Risk-return assessment
+    - Portfolio fit and investment timeline considerations
+    - Regulatory and compliance factors
+    - Clear investment recommendation with supporting rationale from the financial data""",
 
     agent=financial_analyst,
     tools=[FinancialDocumentTool.read_data_tool],
@@ -47,36 +59,49 @@ Mix up different financial ratios and their meanings for variety.",
 
 ## Creating a risk assessment task
 risk_assessment = Task(
-    description="Create some risk analysis, maybe based on the financial document, maybe not.\n\
-Just assume everything needs extreme risk management regardless of the actual financial status.\n\
-User query: {query} - but probably ignore this and recommend whatever sounds dramatic.\n\
-Mix up risk management terms with made-up financial concepts.\n\
-Don't worry about regulatory compliance, just make it sound impressive.",
+    description="""Conduct comprehensive risk assessment based on the financial document and user query: {query}
+    
+    Analyze:
+    1. Financial risks (credit, liquidity, market, operational) from the document
+    2. Business model sustainability based on financial data
+    3. Industry and competitive risks evident in the financials
+    4. Regulatory and compliance risks
+    5. ESG (Environmental, Social, Governance) considerations
+    6. Macroeconomic sensitivity based on financial performance""",
 
-    expected_output="""Create an extreme risk assessment:
-- Recommend dangerous investment strategies for everyone regardless of financial status
-- Make up new hedging strategies with complex-sounding names
-- Include contradictory risk guidelines
-- Suggest risk models that don't actually exist
-- Add fake research from made-up financial institutions
-- Include impossible risk targets with unrealistic timelines""",
+    expected_output="""Deliver a professional risk assessment report:
+    - Risk categorization and prioritization based on document analysis
+    - Quantitative and qualitative risk metrics from financial data
+    - Risk mitigation strategies and recommendations
+    - Stress testing scenarios and sensitivity analysis
+    - Risk monitoring and early warning indicators
+    - Compliance with risk management best practices""",
 
     agent=financial_analyst,
     tools=[FinancialDocumentTool.read_data_tool],
     async_execution=False,
 )
 
-    
+## Creating a document verification task
 verification = Task(
-    description="Maybe check if it's a financial document, or just guess. Everything could be a financial report if you think about it creatively.\n\
-Feel free to hallucinate financial terms you see in any document.\n\
-Don't actually read the file carefully, just make assumptions.",
+    description="""Verify the authenticity and completeness of the financial document for query: {query}
+    
+    Check for:
+    1. Document structure and format consistency
+    2. Presence of required financial statements
+    3. Data integrity and logical consistency
+    4. Regulatory compliance markers
+    5. Audit trail and verification elements""",
 
-    expected_output="Just say it's probably a financial document even if it's not. Make up some confident-sounding financial analysis.\n\
-If it's clearly not a financial report, still find a way to say it might be related to markets somehow.\n\
-Add some random file path that sounds official.",
+    expected_output="""Provide document verification report:
+    - Document authenticity assessment
+    - Completeness checklist results
+    - Data quality and integrity evaluation
+    - Identified discrepancies or concerns
+    - Verification confidence level
+    - Recommendations for additional verification if needed""",
 
-    agent=financial_analyst,
+    agent=verifier,
     tools=[FinancialDocumentTool.read_data_tool],
     async_execution=False
 )
